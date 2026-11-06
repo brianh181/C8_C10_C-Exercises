@@ -27,7 +27,7 @@ int operate(int a, int b, char op) {
     }
 }
 
-int RPN_Solving(char *rpn) {
+int RPN_Solving(char rpn[]) {
     int n_operands_lsize = 0;
     int n_operands[n_operands_lsize];
 
@@ -40,12 +40,15 @@ int RPN_Solving(char *rpn) {
         if (isdigit(rpn[i])){
             int starti = i;
             while (isdigit(rpn[i])) {
+                printf("%c %d\n", rpn[i], i);
+                printf("Processing digit: %c\n", rpn[i]);
                 operand_list_size++;
                 i++;
             }
 
             for (int j = 0; j < operand_list_size; j++) {
-                printf("Processing character: %c\n", rpn[i]);
+                printf("%c %d\n", rpn[starti + j], starti + j);
+                printf("Processing character: %c\n", rpn[starti + j]);
                 operands[j] = rpn[starti + j] - '0'; //convert char to int and put in list
             }
         }
@@ -75,9 +78,9 @@ int RPN_Solving(char *rpn) {
             }
         }
 
-        operator_list_size = operand_list_size + 1;
+        operator_list_size = operand_list_size;
         
-        for (int j = 0; j < operator_list_size; j++) {
+        for (int j = 0; j < operator_list_size - 1; j++) {
             if (rpn[i] == '+' || rpn[i] == '-' || rpn[i] == '*' || rpn[i] == '/') {
                 operators[j] = rpn[i];
                 i++;
@@ -96,17 +99,26 @@ int RPN_Solving(char *rpn) {
 
         n_operands_lsize++;
         int result = 0;
+
+        for (int j = 0; j < operand_list_size; j++) {
+            printf("Operand[%d] = %d\n", j, operands[j]);
+        }
+
         for (int j = 0; j < operand_list_size - 1; j++) {
             result = operate(operands[j], operands[j + 1], operators[j]);
             printf("Intermediate result: %d\n", result);
+            operands[j + 1] = result;
+            printf("Updated operand[%d] = %d\n", j + 1, operands[j + 1]);
         }
 
         n_operands[n_operands_lsize - 1] = result;
         for (int j = 0; j < n_operands_lsize; j++) {
             printf("n_operands[%d] = %d\n", j, n_operands[j]);
         }
-    }
 
+        printf("%c \n", rpn[i]);
+        i--;
+    }
 }
 
 int main(void) {
