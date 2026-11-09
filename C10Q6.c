@@ -5,133 +5,103 @@
 #include <string.h>
 #include <math.h>
 
-int operate(int a, int b, char op) {
-    printf("Operating: %d %c %d\n", a, op, b);
-    switch (op) {
-        case '+':
-            return a + b;
-        case '-':
-            return a - b;
-        case '*':
-            return a * b;
-        case '/':
-            if (b != 0) {
-                return a / b;
-            } else {
-                printf("Error: Division by zero\n");
-                exit(EXIT_FAILURE);
-            }
-        default:
-            printf("Error: Unknown operator '%c'\n", op);
-            exit(EXIT_FAILURE);
-    }
-}
+void Operate(int *Operands, int OperandCount, int *new_Operands, int *new_Operandcount, char *Operators) {
+    new_Operands[*new_Operandcount] = Operands[0];
 
-int RPN_Solving(char rpn[]) {
-    int n_operands_lsize = 0;
-    int n_operands[n_operands_lsize];
+    for (int i = 0; i < OperandCount - 1; i++) {
 
-    for (int i = 0; i < strlen(rpn); i++) {
-        int operand_list_size, operator_list_size = 0;
-        int operands[operand_list_size];
-        int operators[operator_list_size + 1]; // +1 for /0
-
-        printf("Processing character: %c\n", rpn[i]);
-        if (isdigit(rpn[i])){
-            int starti = i;
-            while (isdigit(rpn[i])) {
-                printf("%c %d\n", rpn[i], i);
-                printf("Processing digit: %c\n", rpn[i]);
-                operand_list_size++;
-                i++;
-            }
-
-            for (int j = 0; j < operand_list_size; j++) {
-                printf("%c %d\n", rpn[starti + j], starti + j);
-                printf("Processing character: %c\n", rpn[starti + j]);
-                operands[j] = rpn[starti + j] - '0'; //convert char to int and put in list
-            }
-        }
-        else {
-            printf("%c is not a digit\n", rpn[i]);
-            switch (rpn[i]) {
-                case '+':
-                case '-':
-                case '*':
-                case '/':
-                    operand_list_size = n_operands_lsize;
-                    
-                    for (int j = 0; j < operand_list_size; j++) {
-                        operands[j] = n_operands[j];
-                        n_operands[j] = 0;
-                    }
-
-                    n_operands_lsize = 0;
-                
-                case ' ':
-                    break;
-                case '=':
-                    return n_operands[0];
-                default:
-                    printf("Error: Unknown character '%c'\n", rpn[i]);
-                    exit(EXIT_FAILURE);
-            }
-        }
-
-        operator_list_size = operand_list_size;
-        
-        for (int j = 0; j < operator_list_size - 1; j++) {
-            if (rpn[i] == '+' || rpn[i] == '-' || rpn[i] == '*' || rpn[i] == '/') {
-                operators[j] = rpn[i];
-                i++;
-            }
-            else if (rpn[i] == ' ') {
-                i++;
-            }
-            else if (rpn[i] == '=') {
+        switch (Operators[i]) {
+            case '+':
+                new_Operands[*new_Operandcount] += Operands[i + 1];
                 break;
-            }
-            else {
-                printf("Error: Unknown character '%c'\n", rpn[i]);
-                exit(EXIT_FAILURE);
-            }
+            case '-':
+                new_Operands[*new_Operandcount] -= Operands[i + 1];
+                break;
+            case '*':
+                new_Operands[*new_Operandcount] *= Operands[i + 1];
+                break;
+            case '/':
+                new_Operands[*new_Operandcount] /= Operands[i + 1];
+                break;
         }
-
-        n_operands_lsize++;
-        int result = 0;
-
-        for (int j = 0; j < operand_list_size; j++) {
-            printf("Operand[%d] = %d\n", j, operands[j]);
-        }
-
-        for (int j = 0; j < operand_list_size - 1; j++) {
-            result = operate(operands[j], operands[j + 1], operators[j]);
-            printf("Intermediate result: %d\n", result);
-            operands[j + 1] = result;
-            printf("Updated operand[%d] = %d\n", j + 1, operands[j + 1]);
-        }
-
-        n_operands[n_operands_lsize - 1] = result;
-        for (int j = 0; j < n_operands_lsize; j++) {
-            printf("n_operands[%d] = %d\n", j, n_operands[j]);
-        }
-
-        printf("%c \n", rpn[i]);
-        i--;
     }
+
+    (*new_Operandcount)++;
 }
 
 int main(void) {
-    while (true) {
-        char rpn[100];
-        printf("Enter RPN expression: ");
-        fgets(rpn, sizeof(rpn), stdin);
-        if (strncmp(rpn, "exit", 4) == 0) {
-            break;
-        }
-        int result = RPN_Solving(rpn);
-        printf("Result: %d\n", result);
-    }
+    #define MAX_LIST_LENGTH 100
+    
+    char RPN[MAX_LIST_LENGTH + 1], Operators[MAX_LIST_LENGTH + 1];
+    int OperandCount = 0, Operands[MAX_LIST_LENGTH];
+    int new_Operandcount = 0, New_Operands[MAX_LIST_LENGTH];
 
-    return 0;
+    while (true) {
+        new_Operandcount = 0;
+        memset(New_Operands, 0, sizeof(New_Operands));
+        memset(RPN, '\0', sizeof(RPN));
+        memset(Operands, 0, sizeof(Operands));
+        memset(Operators, '\0', sizeof(Operators));
+        OperandCount = 0;
+
+        printf("Enter an RPN expression: ");
+        scanf("%s", RPN);
+
+        char *character = RPN;
+
+        for (character = &RPN[0]; *character != '\0'; character++) {
+            bool was_operator = false;
+
+            if (isdigit(*character)) {
+                Operands[OperandCount++] = *character - '0';
+
+            } else if (*character == '+' || *character == '-' || *character == '*' || *character == '/') {
+                if (OperandCount < 1) {
+                    OperandCount = new_Operandcount;
+
+                    for (int i = 0; i < new_Operandcount; i++) {
+                        Operands[i] = New_Operands[i];
+                    }
+
+                    memset(New_Operands, 0, sizeof(New_Operands));
+                    new_Operandcount = 0;
+                    
+                }
+                else if (OperandCount < 2) {
+                    OperandCount = new_Operandcount + 1;
+                    Operands[OperandCount - 1] = Operands[0];
+
+                    for (int i = 0; i < new_Operandcount; i++) {
+                        Operands[i] = New_Operands[i];
+                    }
+
+                    memset(New_Operands, 0, sizeof(New_Operands));
+                    new_Operandcount = 0;
+                }
+
+                for (int i = 0; i < OperandCount - 1; i++) {
+                    Operators[i] = *character;
+                    character++;
+                    was_operator = true;
+                }
+
+                Operate(Operands, OperandCount, New_Operands, &new_Operandcount, Operators);
+
+                memset(Operands, 0, sizeof(Operands));
+                memset(Operators, '\0', sizeof(Operators));
+                OperandCount = 0;
+
+            } else if (*character == '=') {
+                printf("Value of expression: %d\n", New_Operands[0]);
+            }
+            else {
+                printf("Invalid input\n");
+                exit(EXIT_FAILURE);
+            }
+
+            if (was_operator) {
+                character--;
+            }
+        }
+    }
 }
